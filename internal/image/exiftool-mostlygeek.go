@@ -56,21 +56,30 @@ func NewExifToolMostlyGeekLoader(exifToolCount int) (*ExifToolMostlyGeekLoader, 
 		"-GPSLatitude#",
 		"-GPSLongitude#",
 	)
+	decoder.flags = append(decoder.flags,
+		// User-defined tags -- first available will be used
+		"-TagsList#",             // Top, Parent/Child
+		"-LastKeywordXMP#",       // Top, Parent/Child
+		"-HierarchicalKeywords#", // Top, Parent|Child
+		"-CatalogSets#",          // Top, Parent|Child
+		"-Subject#",              // Top, Child
+	)
 	return decoder, err
 }
 
-func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]tag.Tag, error) {
+func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]tag.Tag, []string, error) {
 
 	if decoder == nil {
-		return nil, errors.New("unable to decode, exiftool missing")
+		return nil, nil, errors.New("unable to decode, exiftool missing")
 	}
 
 	bytes, err := decoder.exifTool.ExtractFlags(path, decoder.flags...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	tags := make([]tag.Tag, 0)
+	keywords := make([]string, 0)
 	orientation := ""
 	rotation := ""
 	imageWidth := ""
@@ -105,6 +114,21 @@ func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]
 		case "GPSLongitude":
 			longitude = value
 
+		case "HierarchicalKeywords":
+			fallthrough
+		case "CatalogSets":
+			if len(keywords) == 0 && len(value) > 0 {
+				keywords = strings.Split(strings.ReplaceAll(value, "|", "/"), ", ")
+			}
+		case "TagsList":
+			fallthrough
+		case "LastKeywordXMP":
+			fallthrough
+		case "Subject":
+			if len(keywords) == 0 && len(value) > 0 {
+				keywords = strings.Split(value, ", ")
+			}
+
 		// case "GPSDateTime":
 		// 	gpsTime, _ = parseDateTime(value)
 		default:
@@ -130,7 +154,7 @@ func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return tags, err
+		return tags, keywords, err
 	}
 
 	if imageWidth != "" {
@@ -179,7 +203,7 @@ func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]
 
 	// println(path, info.Width, info.Height, info.DateTime.String())
 
-	return tags, nil
+	return tags, keywords, nil
 }
 
 func (decoder *ExifToolMostlyGeekLoader) DecodeBytes(path string, tagName string) ([]byte, error) {

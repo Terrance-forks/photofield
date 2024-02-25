@@ -11,7 +11,7 @@ func (source *Source) indexMetadata(in <-chan interface{}) {
 		path := m.Path
 
 		var info Info
-		tags, err := source.decoder.DecodeInfo(path, &info)
+		tags, _, err := source.decoder.DecodeInfo(path, &info)
 		if err != nil {
 			fmt.Println("Unable to load image info meta", err, path)
 			continue
