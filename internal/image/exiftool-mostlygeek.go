@@ -16,6 +16,8 @@ import (
 
 var previewValueMatcher = regexp.MustCompile(`Binary data (\d+) bytes`)
 
+const listSep = ":#:" // try to avoid clashing with arbitrary user input
+
 type ExifToolMostlyGeekLoader struct {
 	exifTool *exiftool.Pool
 	flags    []string
@@ -30,6 +32,7 @@ func NewExifToolMostlyGeekLoader(exifToolCount int) (*ExifToolMostlyGeekLoader, 
 	decoder.exifTool, err = exiftool.NewPool(
 		"exiftool", exifToolCount,
 		"-S", // Short tag names with no padding
+		"-sep", listSep,
 	)
 
 	decoder.flags = append(decoder.flags,
@@ -118,7 +121,7 @@ func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]
 			fallthrough
 		case "CatalogSets":
 			if len(keywords) == 0 && len(value) > 0 {
-				keywords = strings.Split(strings.ReplaceAll(value, "|", "/"), ", ")
+				keywords = strings.Split(strings.ReplaceAll(value, "|", "/"), listSep)
 			}
 		case "TagsList":
 			fallthrough
@@ -126,7 +129,7 @@ func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]
 			fallthrough
 		case "Subject":
 			if len(keywords) == 0 && len(value) > 0 {
-				keywords = strings.Split(value, ", ")
+				keywords = strings.Split(value, listSep)
 			}
 
 		// case "GPSDateTime":
