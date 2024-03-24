@@ -151,6 +151,7 @@ func loadConfig(dataDir string) (*AppConfig, error) {
 
 	appConfig.Media.AI = appConfig.AI
 	appConfig.Media.DataDir = dataDir
+	appConfig.Media.TagConfig = appConfig.Tags
 	appConfig.Tags.Enable = appConfig.Tags.Enable || appConfig.Tags.Enabled
 	return &appConfig, nil
 }
