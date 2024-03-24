@@ -17,7 +17,7 @@ type Decoder struct {
 }
 
 type metadataLoader interface {
-	DecodeInfo(path string, info *Info) ([]tag.Tag, []string, error)
+	DecodeInfo(path string, info *Info) ([]tag.Tag, error)
 	DecodeBytes(path string, tagName string) ([]byte, error)
 	Close()
 }
@@ -73,7 +73,7 @@ func parseDateTime(value string) (t time.Time, hasTimezone bool, hasSubsec bool,
 	return
 }
 
-func (decoder *Decoder) DecodeInfo(path string, info *Info) ([]tag.Tag, []string, error) {
+func (decoder *Decoder) DecodeInfo(path string, info *Info) ([]tag.Tag, error) {
 	return decoder.loader.DecodeInfo(path, info)
 }
 

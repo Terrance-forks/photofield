@@ -29,13 +29,13 @@ func getOrientationFromExif(x *exif.Exif) string {
 	return "1"
 }
 
-func (decoder *GoExifRwcarlsenLoader) DecodeInfo(path string, info *Info) ([]tag.Tag, []string, error) {
+func (decoder *GoExifRwcarlsenLoader) DecodeInfo(path string, info *Info) ([]tag.Tag, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	defer file.Close()
-	return nil, nil, decoder.DecodeInfoReader(file, info)
+	return nil, decoder.DecodeInfoReader(file, info)
 }
 
 func (decoder *GoExifRwcarlsenLoader) DecodeInfoReader(r io.ReadSeeker, info *Info) error {

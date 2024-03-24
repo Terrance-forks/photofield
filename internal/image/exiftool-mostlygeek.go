@@ -70,19 +70,18 @@ func NewExifToolMostlyGeekLoader(exifToolCount int) (*ExifToolMostlyGeekLoader, 
 	return decoder, err
 }
 
-func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]tag.Tag, []string, error) {
+func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]tag.Tag, error) {
 
 	if decoder == nil {
-		return nil, nil, errors.New("unable to decode, exiftool missing")
+		return nil, errors.New("unable to decode, exiftool missing")
 	}
 
 	bytes, err := decoder.exifTool.ExtractFlags(path, decoder.flags...)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	tags := make([]tag.Tag, 0)
-	keywords := make([]string, 0)
 	orientation := ""
 	rotation := ""
 	imageWidth := ""
@@ -94,6 +93,7 @@ func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]
 
 	output := string(bytes)
 	scanner := bufio.NewScanner(strings.NewReader(output))
+	var keywords []string = nil
 	for scanner.Scan() {
 		line := scanner.Text()
 		nameValueSplit := strings.SplitN(line, ":", 2)
@@ -156,8 +156,13 @@ func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]
 			}
 		}
 	}
+	if len(keywords) > 0 {
+		for _, keyword := range keywords {
+			tags = append(tags, tag.NewExif("keyword", keyword))
+		}
+	}
 	if err := scanner.Err(); err != nil {
-		return tags, keywords, err
+		return tags, err
 	}
 
 	if imageWidth != "" {
@@ -206,7 +211,7 @@ func (decoder *ExifToolMostlyGeekLoader) DecodeInfo(path string, info *Info) ([]
 
 	// println(path, info.Width, info.Height, info.DateTime.String())
 
-	return tags, keywords, nil
+	return tags, nil
 }
 
 func (decoder *ExifToolMostlyGeekLoader) DecodeBytes(path string, tagName string) ([]byte, error) {

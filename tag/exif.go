@@ -11,6 +11,7 @@ import (
 var exifNames = []string{
 	"Make",
 	"Model",
+	"Keyword",
 	// "ISO",
 	// "ShutterSpeed",
 	// "Aperture",
