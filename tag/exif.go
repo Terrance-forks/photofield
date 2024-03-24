@@ -2,10 +2,7 @@ package tag
 
 import (
 	"fmt"
-	"strconv"
 	"unicode"
-
-	"github.com/gosimple/slug"
 )
 
 var exifNames = []string{
@@ -59,13 +56,6 @@ func pascalCaseToKebabCase(s string) string {
 
 func NewExif(name string, value string) Tag {
 	var t Tag
-	v := ""
-	_, err := strconv.ParseFloat(value, 64)
-	if err == nil {
-		v = value
-	} else {
-		v = slug.Make(value)
-	}
-	t.Name = fmt.Sprintf("exif:%s:%s", name, v)
+	t.Name = fmt.Sprintf("exif:%s:%s", name, value)
 	return t
 }
